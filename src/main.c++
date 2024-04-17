@@ -17,11 +17,41 @@ namespace fs = std::filesystem;
 // Main function
 
 void parseProgramOptions(int argc, char **argv) {}
+
+struct TextSettings {
+  sf::Vector2f position;
+  sf::Color color;
+  int charSize;
+  sf::Font font;
+};
+
+sf::Text makeText(const std::string &str,
+                  const TextSettings &textSettings = TextSettings{
+                      .position = sf::Vector2f{0.f, 0.f},
+                      .color = sf::Color::White,
+                      .charSize = 30,
+                  }) {
+
+  sf::Text text;
+  text.setFont(textSettings.font);
+  text.setString(str);
+  text.setFillColor(textSettings.color);
+  text.setCharacterSize(textSettings.charSize);
+  return text;
+}
+
 int main(int argc, char **argv) {
   const auto projectRootDir = fs::path(argv[ARGV_PROJECT_ROOT]);
   const auto resFolder = fs::path(projectRootDir.string() + "/src/res");
   const auto fileRobotoRegularTtf =
       fs::path(resFolder.string() + "/fonts/roboto/Roboto-Regular.ttf");
+
+  sf::Font robotoFont;
+  if (!robotoFont.loadFromFile(fileRobotoRegularTtf.string())) {
+    std::cerr << "Error opening font file " << fileRobotoRegularTtf
+              << std::endl;
+    return -1;
+  }
   // First you need to create the PhysicsCommon object.
   // This is a factory module that you can use to create physics
   // world and other objects. It is also responsible for
@@ -41,19 +71,6 @@ int main(int argc, char **argv) {
 
   // Step the simulation a few steps
   auto window = sf::RenderWindow{{1920u, 1080u}, "SFML-ReactPhysics"};
-
-  sf::Font robotoFont;
-  if (!robotoFont.loadFromFile(fileRobotoRegularTtf.string())) {
-    std::cerr << "Error opening font file " << fileRobotoRegularTtf
-              << std::endl;
-    return -1;
-  }
-  sf::Text text;
-  text.setFont(robotoFont);
-  text.setString("Hello there");
-  text.setFillColor(sf::Color::Green);
-  text.setCharacterSize(30);
-
   // a circle to apply the physics to
   sf::CircleShape circle(50.f);
   circle.setFillColor(sf::Color::Blue);
@@ -67,6 +84,14 @@ int main(int argc, char **argv) {
   auto dy = -2.f;
   auto width = 1920.f;
   auto height = 1080.f;
+
+  auto text =
+      makeText("Hello", TextSettings{.position = sf::Vector2f{20.f, 20.f},
+                                     .font = robotoFont});
+  auto gameStatsText =
+      makeText("Game States", TextSettings{.position = sf::Vector2f{1910, 40},
+                                           .color = sf::Color::Green,
+                                           .font = robotoFont});
   while (window.isOpen()) {
     sf::Event event;
     while (window.pollEvent(event)) {
@@ -97,6 +122,7 @@ int main(int argc, char **argv) {
     window.clear();
     window.draw(circle);
     window.draw(text);
+    window.draw(gameStatsText);
     std::cout << "Body Position: " << ss.str() << std::endl;
     window.display();
   }
