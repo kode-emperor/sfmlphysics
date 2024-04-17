@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.29)
 project(SFMLPhysics LANGUAGES CXX)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
-set(SRC "app/main.c++")
+set(SRC "src/main.c++")
 add_executable(SFMLPhysics ${SRC})
 if(WIN32) 
     list(APPEND CMAKE_PREFIX_PATH "C:\\Program Files (x86)\\ReactPhysics3D")

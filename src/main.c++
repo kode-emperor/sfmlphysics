@@ -6,6 +6,9 @@
 #include <iostream>
 #include <reactphysics3d/reactphysics3d.h>
 #include <sstream>
+#include <thread>
+
+using namespace std::chrono_literals;
 
 #define ARGV_PROJECT_ROOT 1
 // ReactPhysics3D namespace
@@ -16,7 +19,7 @@ namespace fs = std::filesystem;
 void parseProgramOptions(int argc, char **argv) {}
 int main(int argc, char **argv) {
   const auto projectRootDir = fs::path(argv[ARGV_PROJECT_ROOT]);
-  const auto resFolder = fs::path(projectRootDir.string() + "/app/res");
+  const auto resFolder = fs::path(projectRootDir.string() + "/src/res");
   const auto fileRobotoRegularTtf =
       fs::path(resFolder.string() + "/fonts/roboto/Roboto-Regular.ttf");
   // First you need to create the PhysicsCommon object.
@@ -51,6 +54,19 @@ int main(int argc, char **argv) {
   text.setFillColor(sf::Color::Green);
   text.setCharacterSize(30);
 
+  // a circle to apply the physics to
+  sf::CircleShape circle(50.f);
+  circle.setFillColor(sf::Color::Blue);
+
+  auto cx = 10.f;
+  auto cy = 10.f;
+  auto circleRadius = 50.f;
+  circle.setPosition(sf::Vector2f{cx, cy});
+
+  auto dx = 2.f;
+  auto dy = -2.f;
+  auto width = 1920.f;
+  auto height = 1080.f;
   while (window.isOpen()) {
     sf::Event event;
     while (window.pollEvent(event)) {
@@ -58,6 +74,15 @@ int main(int argc, char **argv) {
         window.close();
     }
     world->update(timeStep);
+    if (cx + dx > width - circleRadius || cx + dx < circleRadius) {
+      dx = -dx;
+    }
+
+    if (cy + dy > height - circleRadius || cy + dy < circleRadius) {
+      dy = -dy;
+    }
+    cx += dx;
+    cy += dy;
 
     // Get the updated position of the body
     const Transform &transform = body->getTransform();
@@ -66,8 +91,11 @@ int main(int argc, char **argv) {
     // Display the position of the body
     std::stringstream ss;
     ss << "(" << position.x << ", " << position.y << ", " << position.z << ")";
+    circle.setPosition(sf::Vector2f{cx, cy});
+    // sf::sleep(sf::Time(std::chrono::microseconds(1s).count()));
     text.setString(ss.str());
     window.clear();
+    window.draw(circle);
     window.draw(text);
     std::cout << "Body Position: " << ss.str() << std::endl;
     window.display();
